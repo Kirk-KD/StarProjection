@@ -2,7 +2,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using Unity.Tutorials.Core.Editor;
 using UnityEngine;
 
 public class StarLoader
@@ -42,6 +41,6 @@ public class StarLoader
 
     private static bool ValidateStarData(string[] values)
     {
-        return values[8].IsNotNullOrEmpty() && values[9].IsNotNullOrEmpty() && values[5].IsNotNullOrEmpty();
+        return !values[8].Equals("") && !values[9].Equals("") && !values[5].Equals("");
     }
 }

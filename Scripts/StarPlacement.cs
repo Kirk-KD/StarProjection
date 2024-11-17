@@ -33,14 +33,12 @@ public class StarPlacement : MonoBehaviour
 
     private void ModifyStarObject(GameObject starObj, Star star, float factor)
     {
-        Material material = starObj.GetComponent<Renderer>().material;
-        Color emissionColor = material.GetColor("_EmissionColor");
-        //emissionColor *= factor;
-        emissionColor.r = star.Color.r;
-        emissionColor.g = star.Color.g;
-        emissionColor.b = star.Color.b;
-        emissionColor.a = star.Color.a * factor;
-        material.SetColor("_EmissionColor", emissionColor);
+        MeshRenderer renderer = starObj.GetComponent<MeshRenderer>();
+
+        MaterialPropertyBlock block = new();
+        Color color = new(star.Color.r, star.Color.g, star.Color.b, factor);
+        block.SetColor("_EmissionColor", color);
+        renderer.SetPropertyBlock(block);
 
         starObj.transform.localScale *= factor;
 

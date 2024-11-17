@@ -36,7 +36,6 @@ public class StarProjectionManager : MonoBehaviour
 
     private void Start()
     {
-
         StartCoroutine(InitializeStars());
     }
 

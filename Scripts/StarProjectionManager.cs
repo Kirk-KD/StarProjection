@@ -5,6 +5,7 @@ using UnityEngine;
 
 
 [RequireComponent(typeof(StarPlacement))]
+[RequireComponent(typeof(LongitudeRuler))]
 public class StarProjectionManager : MonoBehaviour
 {
     private static readonly string csvFileName = "stars.csv";
@@ -45,11 +46,7 @@ public class StarProjectionManager : MonoBehaviour
         Coroutine loadStars = StartCoroutine(StarLoader.LoadFromCSV(csvFileName, maxMagnitude, OnFinishLoadingStars));
         yield return getLongitude;
         yield return loadStars;
-        Debug.Log("Current Longitude: " + LongitudeRuler.Longitude);
     }
-
-
-
 
     private void OnFinishLoadingStars(List<Star> stars)
     {
@@ -62,9 +59,9 @@ public class StarProjectionManager : MonoBehaviour
         Debug.Log($"Loaded {stars.Count} stars.");
 
         Stars = stars;
-        float currentLongitude = GetComponent<LongitudeRuler>().getLongitude();
-        // Currently not hard coded longitude 
-        StarLoader.ProjectStars(Stars, currentLongitude, DateTime.Now, distanceFactor);
+        StarLoader.ProjectStars(Stars, LongitudeRuler.Longitude, DateTime.Now, distanceFactor);
+
+        Debug.Log($"Projected at longitude {LongitudeRuler.Longitude} @ {DateTime.Now}");
         
         starPlacement.PlaceStars(Stars);
     }

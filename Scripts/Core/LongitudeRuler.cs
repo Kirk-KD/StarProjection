@@ -5,14 +5,10 @@ using System;
 
 public class LongitudeRuler : MonoBehaviour
 {
-    public GameObject permissionPromptUI;  
+    [Header("DO NOT USE")]
+    public GameObject permissionPromptUI;
 
-    public static float Longitude { get; private set; }
-
-    void Awake()
-    {
-        
-    }
+    public static float Longitude { get; private set; } = 0f;
 
     public IEnumerator GetLongitude()
     {
@@ -20,8 +16,10 @@ public class LongitudeRuler : MonoBehaviour
         if (!Input.location.isEnabledByUser)
         {
             Debug.Log("User did not approve the use of location");
-            permissionPromptUI.SetActive(true); 
-            RequestLocationAccess(); 
+
+            if (permissionPromptUI != null) permissionPromptUI.SetActive(true);
+
+            RequestLocationAccess();
             yield break;
         }
 
@@ -37,14 +35,12 @@ public class LongitudeRuler : MonoBehaviour
         if (maxWait <= 0)
         {
             Debug.Log("Location service initialization timed out");
-            Longitude = 0;
             yield break;
         }
 
         if (Input.location.status == LocationServiceStatus.Failed)
         {
             Debug.Log("Unable to determine device location");
-            Longitude = 0;
             yield break;
         }
         else
@@ -53,16 +49,11 @@ public class LongitudeRuler : MonoBehaviour
             Debug.Log("Longitude: " + Longitude); 
         }
     }
-    public float getLongitude()
-    {
-        return Longitude;
-    }
+
     public void RequestLocationAccess()
     {
-        if (!Input.location.isEnabledByUser)
-        {
-            Application.OpenURL("app-settings:"); 
-        }
+        if (!Input.location.isEnabledByUser && Application.platform == RuntimePlatform.IPhonePlayer)
+            Application.OpenURL("app-settings:");
     }
 
     void OnDestroy()

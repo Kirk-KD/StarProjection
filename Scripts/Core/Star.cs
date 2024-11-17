@@ -60,6 +60,7 @@ public class Star
         {
             if (BV == null) return new Color(1f, 1f, 1f, 1f);
 
+#if UNITY_EDITOR_WIN || UNITY_STANDALONE_WIN
             float bV = Mathf.Clamp((float)BV, -0.4f, 2.0f);
 
             float r, g, b;
@@ -94,6 +95,42 @@ public class Star
             }
 
             return new Color(r, g, b, 1.0f);
+#else
+            float bV = Mathf.Clamp((float)BV, -0.4f, 2.0f);
+
+            float r, g, b;
+
+            if (bV < 0.0f)
+            {
+                // Blue stars (changed because apple sucks)
+                r = 0.61f + 0.11f * bV - 0.2f;
+                g = 0.70f + 0.07f * bV - 0.2f;
+                b = 1.00f;
+            }
+            else if (bV < 0.4f)
+            {
+                // White-blue stars
+                r = 0.83f + 0.17f * bV;
+                g = 0.87f + 0.11f * bV;
+                b = 1.00f;
+            }
+            else if (bV < 1.5f)
+            {
+                // Yellow stars (changed because apple sucks)
+                r = 1.00f;
+                g = 0.98f - 0.16f * (bV - 0.4f) - 0.2f;
+                b = 0.87f - 0.31f * (bV - 0.4f) - 0.2f;
+            }
+            else
+            {
+                // Red stars
+                r = 1.00f;
+                g = 0.82f - 0.5f * (bV - 1.5f);
+                b = 0.57f - 0.44f * (bV - 1.5f);
+            }
+
+            return new Color(r, g, b, 1.0f);
+#endif
         }
     }
 

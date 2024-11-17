@@ -2,9 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.Networking;
 
 public class StarLoader
 {
@@ -63,6 +61,7 @@ public class StarLoader
             };
 
             if (star.Magnitude <= maxMagnitude) stars.Add(star);
+            //if (star.HasReadableName) Debug.Log($"Named star: {star.Name}");
         }
 
         return stars;

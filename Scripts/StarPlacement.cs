@@ -23,6 +23,15 @@ public class StarPlacement : MonoBehaviour
             float factor = GetMagnitudeFactor(star);
 
             ModifyStarObject(starObj, factor);
+
+            if (star.HasReadableName)
+            {
+                SphereCollider collider = starObj.AddComponent<SphereCollider>();
+                collider.radius = 10;
+
+                NamedStar namedStar = starObj.AddComponent<NamedStar>();
+                namedStar.SetStar(star);
+            }
         }
     }
 

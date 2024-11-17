@@ -1,25 +1,32 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using System;
 
 public class LongitudeRuler : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    public GameObject permissionPromptUI;  
+
+    public static float Longitude { get; private set; }
+
+    void Awake()
     {
-        StartCoroutine(StartLocationService());
+        
     }
-    public float Longitude { get; private set; }
-    private IEnumerator StartLocationService()
+
+    public IEnumerator GetLongitude()
     {
 
         if (!Input.location.isEnabledByUser)
         {
-            Debug.Log("La usere did not approve the use of location");
+            Debug.Log("User did not approve the use of location");
+            permissionPromptUI.SetActive(true); 
+            RequestLocationAccess(); 
             yield break;
         }
 
         Input.location.Start();
+
         int maxWait = 20;
         while (Input.location.status == LocationServiceStatus.Initializing && maxWait > 0)
         {
@@ -29,18 +36,37 @@ public class LongitudeRuler : MonoBehaviour
 
         if (maxWait <= 0)
         {
-            Debug.Log("Monsieur Neuvilette, le locating timed out");
+            Debug.Log("Location service initialization timed out");
+            Longitude = 0;
+            yield break;
+        }
+
+        if (Input.location.status == LocationServiceStatus.Failed)
+        {
+            Debug.Log("Unable to determine device location");
+            Longitude = 0;
             yield break;
         }
         else
         {
             Longitude = Input.location.lastData.longitude;
+            Debug.Log("Longitude: " + Longitude); 
+        }
+    }
+    public float getLongitude()
+    {
+        return Longitude;
+    }
+    public void RequestLocationAccess()
+    {
+        if (!Input.location.isEnabledByUser)
+        {
+            Application.OpenURL("app-settings:"); 
         }
     }
 
-    // Update is called once per frame
     void OnDestroy()
     {
-        Input.location.Stop();
+        Input.location.Stop();  
     }
 }

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+
 [RequireComponent(typeof(StarPlacement))]
 public class StarProjectionManager : MonoBehaviour
 {
@@ -11,6 +12,7 @@ public class StarProjectionManager : MonoBehaviour
     public List<Star> Stars { get; private set; }
 
     private StarPlacement starPlacement;
+    private LongitudeRuler longitudeRuler;
 
     [Tooltip("The Magnitude of a star starts from zero and grows larger as the visibility grows dimmer.\nUsually stars with Magnitudes lower than 6 is visible to the naked eye. Increase this value to include more stars.")]
     [Header("Magnitude Cutoff")]
@@ -23,15 +25,31 @@ public class StarProjectionManager : MonoBehaviour
     [SerializeField]
     private float distanceFactor = 30;
 
+
     private void Awake()
     {
         starPlacement = GetComponent<StarPlacement>();
+        longitudeRuler = GetComponent<LongitudeRuler>();
     }
+
 
     private void Start()
     {
-        StartCoroutine(StarLoader.LoadFromCSV(csvFileName, maxMagnitude, OnFinishLoadingStars));
+
+        StartCoroutine(InitializeStars());
     }
+
+    private IEnumerator InitializeStars()
+    {
+        Coroutine getLongitude = StartCoroutine(longitudeRuler.GetLongitude());
+        Coroutine loadStars = StartCoroutine(StarLoader.LoadFromCSV(csvFileName, maxMagnitude, OnFinishLoadingStars));
+        yield return getLongitude;
+        yield return loadStars;
+        Debug.Log("Current Longitude: " + LongitudeRuler.Longitude);
+    }
+
+
+
 
     private void OnFinishLoadingStars(List<Star> stars)
     {
@@ -44,10 +62,10 @@ public class StarProjectionManager : MonoBehaviour
         Debug.Log($"Loaded {stars.Count} stars.");
 
         Stars = stars;
-
-        // Currently hard coded longitude
-        StarLoader.ProjectStars(Stars, -122.4194f, DateTime.Now, distanceFactor);
-
+        float currentLongitude = GetComponent<LongitudeRuler>().getLongitude();
+        // Currently not hard coded longitude 
+        StarLoader.ProjectStars(Stars, currentLongitude, DateTime.Now, distanceFactor);
+        
         starPlacement.PlaceStars(Stars);
     }
 }

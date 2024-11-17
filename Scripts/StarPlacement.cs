@@ -15,9 +15,9 @@ public class StarPlacement : MonoBehaviour
         projectionManager = GetComponent<StarProjectionManager>();
     }
 
-    private void Start()
+    public void PlaceStars(List<Star> stars)
     {
-        foreach (Star star in projectionManager.Stars)
+        foreach (Star star in stars)
         {
             GameObject starObj = Instantiate(starPrefab, star.Position, Quaternion.identity);
             float factor = GetMagnitudeFactor(star);

@@ -2,16 +2,50 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Networking;
 
 public class StarLoader
 {
-    public static List<Star> LoadFromCSV(string path, float maxMagnitude)
+    public static IEnumerator LoadFromCSV(string fileName, float maxMagnitude, Action<List<Star>> onComplete)
     {
-        if (!File.Exists(path)) throw new FileNotFoundException($"No such file: {path}");
+        string path = Path.Combine(Application.streamingAssetsPath, fileName);
+        Debug.Log($"Loading CSV from {path}");
 
+        if (Application.platform == RuntimePlatform.IPhonePlayer || Application.platform == RuntimePlatform.Android)
+        {
+            UnityWebRequest uwr = UnityWebRequest.Get(path);
+            yield return uwr.SendWebRequest();
+
+            if (uwr.result != UnityWebRequest.Result.Success)
+            {
+                Debug.LogError($"Error loading file: {uwr.error}");
+                onComplete?.Invoke(null);
+                yield break;
+            }
+
+            string[] lines = uwr.downloadHandler.text.Split('\n');
+            List<Star> stars = ParseStarsFromCSV(lines, maxMagnitude);
+            onComplete?.Invoke(stars);
+        } else
+        {
+            if (!File.Exists(path))
+            {
+                Debug.LogError($"File not found: {path}");
+                onComplete?.Invoke(null);
+                yield break;
+            }
+
+            string[] lines = File.ReadAllLines(path);
+            List<Star> stars = ParseStarsFromCSV(lines, maxMagnitude);
+            onComplete?.Invoke(stars);
+        }
+    }
+
+    private static List<Star> ParseStarsFromCSV(string[] lines, float maxMagnitude)
+    {
         List<Star> stars = new();
-        string[] lines = File.ReadAllLines(path);
 
         for (int i = 1; i < lines.Length; i++)
         {
@@ -19,7 +53,7 @@ public class StarLoader
 
             if (!ValidateStarData(values)) continue;
 
-            Star star = new Star
+            Star star = new()
             {
                 Catalog = "HP", // Catalog
                 ID = values[1], // ID

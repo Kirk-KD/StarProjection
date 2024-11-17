@@ -4,11 +4,14 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
+[RequireComponent(typeof(StarPlacement))]
 public class StarProjectionManager : MonoBehaviour
 {
-    private static readonly string csvPath = Application.dataPath + "/StarProjection/Data/stars.csv";
+    private static readonly string csvFileName = "stars.csv";
 
     public List<Star> Stars { get; private set; }
+
+    private StarPlacement starPlacement;
 
     [Tooltip("The Magnitude of a star starts from zero and grows larger as the visibility grows dimmer.\nUsually stars with Magnitudes lower than 6 is visible to the naked eye. Increase this value to include more stars.")]
     [Header("Magnitude Cutoff")]
@@ -24,10 +27,29 @@ public class StarProjectionManager : MonoBehaviour
 
     private void Awake()
     {
-        Stars = StarLoader.LoadFromCSV(csvPath, maxMagnitude);
-        Debug.Log($"{Stars.Count} stars loaded from {csvPath} (Magnitude <= {maxMagnitude})");
+        starPlacement = GetComponent<StarPlacement>();
+    }
+
+    private void Start()
+    {
+        StartCoroutine(StarLoader.LoadFromCSV(csvFileName, maxMagnitude, OnFinishLoadingStars));
+    }
+
+    private void OnFinishLoadingStars(List<Star> stars)
+    {
+        if (stars == null)
+        {
+            Debug.LogError("Stars did not load!");
+            return;
+        }
+
+        Debug.Log($"Loaded {stars.Count} stars.");
+
+        Stars = stars;
 
         // Currently hard coded longitude
         StarLoader.ProjectStars(Stars, -122.4194f, DateTime.Now, distanceFactor);
+
+        starPlacement.PlaceStars(Stars);
     }
 }

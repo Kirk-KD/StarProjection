@@ -38,6 +38,7 @@ public class Star
     public float RAdeg { get; set; } // Right ascension degree
     public float DEdeg { get; set; } // Declination degree
     public float Magnitude { get; set; } // Brightness, higher is dimmer, <= 6 is roughly the cutoff for naked eye visibility
+    public float? BV { get; set; } // bV color value
     public Vector3 Position { get; private set; }
 
     public string Name {
@@ -50,6 +51,49 @@ public class Star
         get
         {
             return StarDictionary.ContainsKey(ID);
+        }
+    }
+
+    public Color Color
+    {
+        get
+        {
+            if (BV == null) return new Color(1f, 1f, 1f, 1f);
+
+            float bV = Mathf.Clamp((float)BV, -0.4f, 2.0f);
+
+            float r, g, b;
+
+            if (bV < 0.0f)
+            {
+                // Blue stars
+                r = 0.61f + 0.11f * bV;
+                g = 0.70f + 0.07f * bV;
+                b = 1.00f;
+            }
+            else if (bV < 0.4f)
+            {
+                // White-blue stars
+                r = 0.83f + 0.17f * bV;
+                g = 0.87f + 0.11f * bV;
+                b = 1.00f;
+            }
+            else if (bV < 1.5f)
+            {
+                // Yellow stars
+                r = 1.00f;
+                g = 0.98f - 0.16f * (bV - 0.4f);
+                b = 0.87f - 0.31f * (bV - 0.4f);
+            }
+            else
+            {
+                // Red stars
+                r = 1.00f;
+                g = 0.82f - 0.5f * (bV - 1.5f);
+                b = 0.57f - 0.44f * (bV - 1.5f);
+            }
+
+            return new Color(r, g, b, 1.0f);
         }
     }
 

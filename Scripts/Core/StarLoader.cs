@@ -57,7 +57,8 @@ public class StarLoader
                 ID = values[1], // ID
                 RAdeg = float.Parse(values[8]), // Right Ascension
                 DEdeg = float.Parse(values[9]), // Declination
-                Magnitude = float.Parse(values[5]) // Visual Magnitude
+                Magnitude = float.Parse(values[5]), // Visual Magnitude
+                BV = ParseFloatOrDefault(values[37], null)
             };
 
             if (star.Magnitude <= maxMagnitude) stars.Add(star);
@@ -75,5 +76,10 @@ public class StarLoader
     private static bool ValidateStarData(string[] values)
     {
         return !values[8].Equals("") && !values[9].Equals("") && !values[5].Equals("");
+    }
+
+    private static float? ParseFloatOrDefault(string s, float? d)
+    {
+        return float.TryParse(s, out float f) ? f : d;
     }
 }

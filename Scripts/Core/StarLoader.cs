@@ -10,36 +10,36 @@ public class StarLoader
 {
     public static IEnumerator LoadFromCSV(string fileName, float maxMagnitude, Action<List<Star>> onComplete)
     {
-        string path = Path.Combine(Application.streamingAssetsPath, fileName);
-        Debug.Log($"Loading CSV from {path}");
-
-        if (Application.platform == RuntimePlatform.IPhonePlayer || Application.platform == RuntimePlatform.Android)
+        string path = GetStreamingAssetsPath(fileName);
+        if (File.Exists(path))
         {
-            UnityWebRequest uwr = UnityWebRequest.Get(path);
-            yield return uwr.SendWebRequest();
+            Debug.Log($"Loading stars from {path}");
 
-            if (uwr.result != UnityWebRequest.Result.Success)
-            {
-                Debug.LogError($"Error loading file: {uwr.error}");
-                onComplete?.Invoke(null);
-                yield break;
-            }
+            using StreamReader sr = new(path);
 
-            string[] lines = uwr.downloadHandler.text.Split('\n');
-            List<Star> stars = ParseStarsFromCSV(lines, maxMagnitude);
-            onComplete?.Invoke(stars);
+            List<string> lines = new();
+            while (!sr.EndOfStream) lines.Add(sr.ReadLine());
+            onComplete?.Invoke(ParseStarsFromCSV(lines.ToArray(), maxMagnitude));
         } else
         {
-            if (!File.Exists(path))
-            {
-                Debug.LogError($"File not found: {path}");
-                onComplete?.Invoke(null);
-                yield break;
-            }
+            Debug.LogError($"File not found: {path}");
+            onComplete?.Invoke(null);
+        }
 
-            string[] lines = File.ReadAllLines(path);
-            List<Star> stars = ParseStarsFromCSV(lines, maxMagnitude);
-            onComplete?.Invoke(stars);
+        yield return null;
+    }
+
+    private static string GetStreamingAssetsPath(string fileName)
+    {
+        if (Application.platform == RuntimePlatform.IPhonePlayer)
+        {
+            // Special case for iOS
+            return Path.Combine(Application.dataPath, "Raw", fileName);
+        }
+        else
+        {
+            // Other NORMAL platforms made by intelligent people
+            return Path.Combine(Application.streamingAssetsPath, fileName);
         }
     }
 
